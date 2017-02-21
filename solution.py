@@ -61,6 +61,7 @@ def naked_twins(values):
         the values dictionary with the naked twins eliminated from peers.
     """
     # Find all instances of naked twins
+    # I have to admit there must be more elegant ways to resolve this, but it works.
     for unit in unitlist:
         # there have to be at least two boxes with a value of length 2 to have naked twins
         peer_boxes = [(values[box], box) for box in unit if len(values[box]) == 2]
@@ -100,24 +101,27 @@ def display(values):
     Args:
         values(dict): The sudoku in dictionary form
     """
-    width = 1+max(len(values[s]) for s in boxes)
-    line = '+'.join(['-'*(width*3)]*3)
+    # this is from the lessons
+    width = 1 + max(len(values[s]) for s in boxes)
+    line = '+'.join(['-' * (width * 3)] * 3)
     for r in rows:
-        print(''.join(values[r+c].center(width)+('|' if c in '36' else '')
+        print(''.join(values[r + c].center(width) + ('|' if c in '36' else '')
                       for c in cols))
         if r in 'CF': print(line)
     return
 
 def eliminate(values):
+    # this is my own implementation from the lessons exercises
     for k in values:
         peers = get_peers_for_box(k)
         for box in peers:
             if len(values[k]) == 1 and values[k] in values[box] and len(values[box]) > 1:
-                new_val = values[box].replace(values[k],'')
+                new_val = values[box].replace(values[k], '')
                 assign_value(values, box, new_val)
     return values
 
 def only_choice(values):
+    # I also took this from the lesson, my implementation was just as effective but this is cleaner
     for unit in unitlist:
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
@@ -126,6 +130,18 @@ def only_choice(values):
     return values
 
 def reduce_puzzle(values):
+    """
+    Reduce the puzzle
+    Args:
+        values(dict): the sudoku in dictionary form
+    Returns:
+        A grid in dictionary form:
+            Keys: the boxes
+            Boxes: the values
+    """
+    # at first i tried resolving the puzzle with just eliminate(only_choice(values))
+    # this would work in 12 passes, however naked_twins is required so i use only_choice/eliminate
+    # until i get any pair of boxes with 2-length values, so i can attempt naked_twins
     while True:
         newgame = values.copy()
         newgame = eliminate(newgame)
